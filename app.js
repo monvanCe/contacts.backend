@@ -1,68 +1,80 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const app = express();
-const db = mongoose.connection;
-const Schema = mongoose.Schema;
+var async = require('async');
+var Users = require('./models/users');
 
-mongoose.connect(
-  'mongodb://localhost:27017/contacts',
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  },
-  (err) => {
+var mongoose = require('mongoose');
+const mongoDB =
+  'mongodb+srv://contacts:12345@cluster0.6hcf2uo.mongodb.net/local_library?retryWrites=true&w=majority';
+
+mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.Promise = global.Promise;
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+var users = [];
+
+function userCreate(email, username, password, contacts, cb) {
+  userdetail = {
+    email: email,
+    username: username,
+    password: password,
+    contacts: contacts,
+  };
+
+  var user = new Users(userdetail);
+  user.save(function (err) {
     if (err) {
-      console.log(err);
-    } else {
-      console.log('succesfully connected');
+      cb(err, null);
+      return;
     }
+    console.log('New User: ' + user);
+    users.push(user);
+    cb(null, user);
+  });
+}
+
+function createUsers(cb) {
+  async.parallel(
+    [
+      function (callback) {
+        userCreate(
+          'omerfkoca@gmail.com',
+          'monvance',
+          'omerofkoca74',
+          [
+            { name: 'beyazmasa', number: 153 },
+            { name: 'ttmusteri', number: 4441444 },
+          ],
+          callback
+        );
+      },
+      function (callback) {
+        userCreate(
+          'falcao4242@gmail.com',
+          'ardoli599',
+          'ardoli1905',
+          [
+            { name: 'beyazmasa', number: 153 },
+            { name: 'ttmusteri', number: 4441444 },
+          ],
+          callback
+        );
+      },
+    ],
+    // optional callback
+    cb
+  );
+}
+
+async.series(
+  [createUsers],
+  // Optional callback
+  function (err, results) {
+    if (err) {
+      console.log('FINAL ERR: ' + err);
+    } else {
+      console.log('users: ' + users);
+    }
+    // All done, disconnect from database
+    mongoose.connection.close();
   }
 );
-
-const contactsSchema = new Schema({
-  email: { type: String },
-  username: { type: String },
-  password: { type: String },
-  date: { type: Date, default: Date.now() },
-  contacts: [],
-});
-
-const contactsModel = mongoose.model('Users', contactsSchema);
-
-const user1 = new contactsModel({
-  email: 'omerfkoca@gmail.com',
-  username: 'monvance',
-  password: 'omerofkoca74',
-  contacts: [
-    { name: 'beyazmasa', number: 153 },
-    { name: 'ttmusteri', number: 4441444 },
-  ],
-});
-
-const user2 = new contactsModel({
-  email: 'falcao4247@gmail.com',
-  username: 'ardoli599',
-  password: 'ardoli1905',
-  contacts: [
-    { name: 'beyazmasa', number: 153 },
-    { name: 'ttmusteri', number: 4441444 },
-  ],
-});
-
-user1.save((err) => {
-  if (err) {
-    console.log('user 1 save başarısız');
-    return handleError(err);
-  } else {
-    console.log('user 1 save başarılı');
-  }
-});
-
-user2.save((err) => {
-  if (err) {
-    console.log('user 2 save başarısız');
-    return handleError(err);
-  } else {
-    console.log('user 2 save başarılı');
-  }
-});
