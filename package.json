@@ -1,12 +1,13 @@
 {
-  "name": "contacts",
+  "name": "contacts.express",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "nodemon ./bin/www"
   },
   "dependencies": {
     "async": "^3.2.4",
+    "body-parser": "^1.20.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
@@ -14,6 +15,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.7.2",
     "morgan": "~1.9.1",
+    "nodemon": "^2.0.20",
     "pug": "2.0.0-beta11"
   }
 }

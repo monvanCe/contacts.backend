@@ -1,80 +1,48 @@
-var async = require('async');
-var Users = require('./models/users');
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+const bodyParser = require('body-parser')
+const db= require('./helper/db')
+db()
 
-var mongoose = require('mongoose');
-const mongoDB =
-  'mongodb+srv://contacts:12345@cluster0.6hcf2uo.mongodb.net/local_library?retryWrites=true&w=majority';
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
 
-mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.Promise = global.Promise;
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+var app = express();
 
-var users = [];
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
-function userCreate(email, username, password, contacts, cb) {
-  userdetail = {
-    email: email,
-    username: username,
-    password: password,
-    contacts: contacts,
-  };
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({
+  extended: true
+}))
 
-  var user = new Users(userdetail);
-  user.save(function (err) {
-    if (err) {
-      cb(err, null);
-      return;
-    }
-    console.log('New User: ' + user);
-    users.push(user);
-    cb(null, user);
-  });
-}
+app.use('/', indexRouter);
+app.use('/user', usersRouter);
 
-function createUsers(cb) {
-  async.parallel(
-    [
-      function (callback) {
-        userCreate(
-          'omerfkoca@gmail.com',
-          'monvance',
-          'omerofkoca74',
-          [
-            { name: 'beyazmasa', number: 153 },
-            { name: 'ttmusteri', number: 4441444 },
-          ],
-          callback
-        );
-      },
-      function (callback) {
-        userCreate(
-          'falcao4242@gmail.com',
-          'ardoli599',
-          'ardoli1905',
-          [
-            { name: 'beyazmasa', number: 153 },
-            { name: 'ttmusteri', number: 4441444 },
-          ],
-          callback
-        );
-      },
-    ],
-    // optional callback
-    cb
-  );
-}
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
 
-async.series(
-  [createUsers],
-  // Optional callback
-  function (err, results) {
-    if (err) {
-      console.log('FINAL ERR: ' + err);
-    } else {
-      console.log('users: ' + users);
-    }
-    // All done, disconnect from database
-    mongoose.connection.close();
-  }
-);
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+module.exports = app;
