@@ -1,0 +1,25 @@
+const jwt = require('jsonwebtoken')
+
+module.exports=(req,res,next)=>{ 
+  const token = req.headers['token'] || req.body.token || req.query.token || 
+  console.log(req)
+  if(token){
+    jwt.verify(token,req.app.get('api_secret_key'),(err,decoded)=>{
+      if(err){
+        res.json({
+          status:false,
+          message:'failed to authenticate token'
+        })
+      }else {
+        req.decode=decoded
+        next()
+      }
+    })
+  }
+  else{
+    res.json({
+      status:false,
+      message:'no token provided'
+    })
+  }
+}
