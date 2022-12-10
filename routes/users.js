@@ -77,7 +77,7 @@ router.post('/showcontacts', cors(), function (req, res) {
 
   promise
     .then((data) => {
-      res.json(data.contacts);
+      res.json(data);
     })
     .catch((err) => {
       res.json(err);
