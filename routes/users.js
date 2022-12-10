@@ -52,7 +52,7 @@ router.post('/login', cors(), (req, res) => {
             userid,
           };
           const token = jwt.sign(payload, req.app.get('api_secret_key'), {
-            expiresIn: 7200,
+            expiresIn: '1m',
           });
           console.log({
             status: true,
