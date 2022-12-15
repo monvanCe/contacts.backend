@@ -12,7 +12,6 @@ db();
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
-const verify_token = require('./middleware/verify-token');
 const config = require('./config');
 
 var app = express();
@@ -36,7 +35,6 @@ app.use(
 
 app.use('/', indexRouter);
 app.use('/user', usersRouter);
-app.use('/verify', verify_token);
 app.use(cors());
 
 // catch 404 and forward to error handler
